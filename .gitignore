@@ -4,6 +4,7 @@
 
 Backups/
 build/
+dist/
 ExportedBarcodes/
 ExportedReports/
 lib/
@@ -15,3 +16,4 @@ test/
 /build.xml
 /dbinfo.ser
 /manifest.mf
+src/gui/StripePayment.java
