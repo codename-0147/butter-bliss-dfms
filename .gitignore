@@ -1,0 +1,17 @@
+# ignoring .DS_Store files
+.DS_Store
+
+
+Backups/
+build/
+ExportedBarcodes/
+ExportedReports/
+lib/
+nbproject/
+src/model/MySQL.java
+src/model/MySQLNew.java
+src/model/GmailOAuthService.java
+test/
+/build.xml
+/dbinfo.ser
+/manifest.mf

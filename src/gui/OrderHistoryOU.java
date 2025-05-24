@@ -1,0 +1,554 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
+package gui;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.MySQL;
+
+/**
+ *
+ * @author chath
+ */
+public class OrderHistoryOU extends javax.swing.JDialog {
+
+    private OrderOU order;
+
+    HashMap<String, String> statusMap = new HashMap<>();
+    HashMap<String, String> typeMap = new HashMap<>();
+
+    /**
+     * Creates new form OrderHistory
+     */
+    public OrderHistoryOU(java.awt.Frame parent, boolean modal, OrderOU order) {
+        super(parent, modal);
+        this.order = order;
+        initComponents();
+        loadOrders(null, null);
+        loadType();
+        loadStatus();
+
+    }
+
+    private void loadType() {
+
+        try {
+
+            Vector<String> vector = new Vector<>();
+            vector.add("Select Type");
+
+            ResultSet resultSet = MySQL.executeSearch("SELECT * FROM `order_type`");
+
+            while (resultSet.next()) {
+                vector.add(resultSet.getString("type"));
+                typeMap.put(resultSet.getString("type"), resultSet.getString("id"));
+            }
+
+            jComboBox2.setModel(new DefaultComboBoxModel<>(vector));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadStatus() {
+
+        try {
+
+            Vector<String> vector = new Vector<>();
+            vector.add("Select Status");
+
+            ResultSet resultSet = MySQL.executeSearch("SELECT * FROM `order_status`");
+
+            while (resultSet.next()) {
+                vector.add(resultSet.getString("name"));
+                statusMap.put(resultSet.getString("name"), resultSet.getString("id"));
+            }
+
+            jComboBox1.setModel(new DefaultComboBoxModel<>(vector));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadOrders(String dateFilter, String typeFilter) {
+        try {
+            
+            String query = "SELECT `order`.`id` AS order_id, `order`.`date` AS order_date, "
+                    + "`w_product`.`id` AS w_product_id, `w_product`.`name` AS w_product_name, "
+                    + "`order_items`.`qty` AS order_qty, `order_type`.`type` AS order_type, "
+                    + "`order_status`.`name` AS status_name "
+                    + "FROM `order` "
+                    + "INNER JOIN `order_items` ON `order`.`id` = `order_items`.`order_id` "
+                    + "INNER JOIN `w_product` ON `order_items`.`w_product_id` = `w_product`.`id` "
+                    + "INNER JOIN `order_type` ON `order`.`order_type_id` = `order_type`.`id`"
+                    + "INNER JOIN `order_status` ON `order`.`order_status_id` = `order_status`.`id`";
+
+            boolean whereAdded = false;
+
+           
+            if (dateFilter != null && !dateFilter.isEmpty()) {
+                query += " WHERE `order`.`date` = '" + dateFilter + "'";
+                whereAdded = true;
+            }
+
+            if (typeFilter != null) {
+                query += (whereAdded ? " AND " : " WHERE ") + "`order`.`order_type_id` = '" + typeFilter + "'";
+            }
+
+           
+            ResultSet resultSet = MySQL.executeSearch(query);
+
+          
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+            model.setRowCount(0); 
+
+            while (resultSet.next()) {
+                Vector<String> vector = new Vector<>();
+                vector.add(resultSet.getString("order_id"));       
+                vector.add(resultSet.getString("order_type"));      
+                vector.add(resultSet.getString("order_date"));      
+                vector.add(resultSet.getString("w_product_id"));      
+                vector.add(resultSet.getString("w_product_name"));    
+                vector.add(resultSet.getString("order_qty"));       
+                vector.add(resultSet.getString("status_name"));     
+                model.addRow(vector);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading orders: " + e.getMessage());
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jLabel10 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jButton12 = new javax.swing.JButton();
+        jDateChooser1 = new com.toedter.calendar.JDateChooser();
+        jButton19 = new javax.swing.JButton();
+        jButton13 = new javax.swing.JButton();
+        jLabel11 = new javax.swing.JLabel();
+        jComboBox2 = new javax.swing.JComboBox<>();
+        jButton20 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabel1.setText("Order History");
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "Order ID", "Type", "Date", "Product Id", "Product Name", "Quantity", "Status"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(jTable1);
+
+        jLabel10.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
+        jLabel10.setText("Status");
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jButton12.setBackground(new java.awt.Color(245, 219, 200));
+        jButton12.setFont(new java.awt.Font("Poppins Medium", 0, 14)); // NOI18N
+        jButton12.setText("Update");
+        jButton12.setPreferredSize(new java.awt.Dimension(115, 40));
+        jButton12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton12ActionPerformed(evt);
+            }
+        });
+
+        jDateChooser1.setBackground(new java.awt.Color(255, 255, 255));
+        jDateChooser1.setForeground(new java.awt.Color(255, 255, 255));
+        jDateChooser1.setDateFormatString("yyyy-MM-dd");
+        jDateChooser1.setFont(new java.awt.Font("Poppins", 0, 11)); // NOI18N
+
+        jButton19.setBackground(new java.awt.Color(245, 219, 200));
+        jButton19.setFont(new java.awt.Font("Poppins Medium", 0, 14)); // NOI18N
+        jButton19.setText("Find");
+        jButton19.setPreferredSize(new java.awt.Dimension(115, 40));
+        jButton19.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton19ActionPerformed(evt);
+            }
+        });
+
+        jButton13.setBackground(new java.awt.Color(245, 219, 200));
+        jButton13.setFont(new java.awt.Font("Poppins Medium", 0, 14)); // NOI18N
+        jButton13.setText("Reset");
+        jButton13.setPreferredSize(new java.awt.Dimension(115, 40));
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
+
+        jLabel11.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
+        jLabel11.setText("Type");
+
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jButton20.setBackground(new java.awt.Color(245, 219, 200));
+        jButton20.setFont(new java.awt.Font("Poppins Medium", 0, 14)); // NOI18N
+        jButton20.setText("Find");
+        jButton20.setPreferredSize(new java.awt.Dimension(115, 40));
+        jButton20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton20ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setBackground(new java.awt.Color(255, 248, 244));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/icons8-print-28.png"))); // NOI18N
+        jButton1.setBorder(null);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addComponent(jLabel1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel10)
+                        .addGap(12, 12, 12)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 820, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(23, 23, 23))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(30, 30, 30)
+                .addComponent(jLabel1)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(32, 32, 32)
+                            .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(33, 33, 33)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel11)
+                                .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel10)
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(15, 15, 15)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+        setLocationRelativeTo(null);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
+
+        try {
+            
+            int selectedRow = jTable1.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Please select an order to update the status!");
+                return;
+            }
+
+           
+            String orderId = jTable1.getValueAt(selectedRow, 0).toString(); 
+
+      
+            String newStatus = jComboBox1.getSelectedItem().toString(); 
+
+       
+            ResultSet resultSet = MySQL.executeSearch(
+                    "SELECT id FROM order_status WHERE name = '" + newStatus + "'"
+            );
+            int statusId = -1;
+            if (resultSet.next()) {
+                statusId = resultSet.getInt("id");
+            }
+
+            if (statusId == -1) {
+                JOptionPane.showMessageDialog(this, "Invalid status selected!");
+                return;
+            }
+
+       
+            String updateQuery = "UPDATE `order` SET `order_status_id` = " + statusId + " WHERE `id` = " + orderId;
+
+       
+            int rowsAffected = MySQL.executeIUD(updateQuery);
+
+    
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Order status updated successfully!");
+                 loadOrders(null, null);
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to update the order status.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred: " + e.getMessage());
+        }
+
+    }//GEN-LAST:event_jButton12ActionPerformed
+
+    private void jButton19ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton19ActionPerformed
+
+        try {
+            java.util.Date selectedDate = jDateChooser1.getDate();
+            if (selectedDate == null) {
+                JOptionPane.showMessageDialog(this, "Please select a date!");
+                return;
+            }
+
+       
+            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(selectedDate);
+
+          
+            loadOrders(formattedDate, null); 
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+
+
+    }//GEN-LAST:event_jButton19ActionPerformed
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+
+        int row = jTable1.getSelectedRow();
+
+        jComboBox1.setSelectedItem(String.valueOf(jTable1.getValueAt(row, 6)));
+        jComboBox2.setSelectedItem(String.valueOf(jTable1.getValueAt(row, 1)));
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
+
+        loadOrders(null, null);
+        jDateChooser1.setDate(null);
+        jComboBox2.setSelectedIndex(0);
+    }//GEN-LAST:event_jButton13ActionPerformed
+
+    private void jButton20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton20ActionPerformed
+
+        try {
+            String selectedType = (String) jComboBox2.getSelectedItem();
+
+            if (selectedType.equals("Select Type")) {
+                JOptionPane.showMessageDialog(this, "Please select a valid type!");
+                return;
+            }
+
+          
+            String typeId = typeMap.get(selectedType);
+
+         
+            loadOrders(null, typeId); 
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }//GEN-LAST:event_jButton20ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        JFileChooser dialog = new JFileChooser();
+        dialog.setSelectedFile(new File("OrderHistory" + ".pdf"));
+        int dialogResult = dialog.showSaveDialog(null);
+
+        if (dialogResult == JFileChooser.APPROVE_OPTION) {
+            String filePath = dialog.getSelectedFile().getPath();
+
+            Document doc = new Document();
+
+            try {
+                PdfWriter.getInstance(doc, new FileOutputStream(filePath));
+                doc.open();
+
+                PdfPTable tb1 = new PdfPTable(7);
+
+                float[] columnWidths = {3f, 3f, 3f, 3f, 3f,3f,3f};
+                tb1.setWidths(columnWidths);
+
+                Font headerFont = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL);
+                Font cellFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL);
+
+                PdfPCell header;
+                header = new PdfPCell(new Phrase("Order ID", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Type", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Date", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Product ID", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Product Name", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Quantity", headerFont));
+                tb1.addCell(header);
+                header = new PdfPCell(new Phrase("Status", headerFont));
+                tb1.addCell(header);
+
+                for (int i = 0; i < jTable1.getRowCount(); i++) {
+                    PdfPCell cell;
+
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 0).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 1).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 2).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 3).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 4).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+                    
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 5).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+                    
+                    cell = new PdfPCell(new Phrase(jTable1.getValueAt(i, 6).toString(), cellFont));
+                    cell.setFixedHeight(20f);
+                    tb1.addCell(cell);
+
+                }
+
+                doc.add(tb1);
+                doc.close();
+                JOptionPane.showMessageDialog(null, "PDF Generated Successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (FileNotFoundException | DocumentException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error generating PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton12;
+    private javax.swing.JButton jButton13;
+    private javax.swing.JButton jButton19;
+    private javax.swing.JButton jButton20;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> jComboBox2;
+    private com.toedter.calendar.JDateChooser jDateChooser1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTable1;
+    // End of variables declaration//GEN-END:variables
+}
